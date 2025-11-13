@@ -1,0 +1,3 @@
+BF_FP_PROBABILITY = 0.10
+PREFIX_SIZE = 4
+CONTEXT_PATH = "/gnarlycursion-api"
