@@ -1,0 +1,43 @@
+The app is divided into 2 sections, CLIENT and SERVER.
+- The CLIENT is the program run by end users, who can check if a URL is safe.
+- The SERVER is a lightweight HTTP server in Python containing the master list of malicious URLs
+    - The SERVER provides the query endpoint for the CLIENT to do confirmation checks on a URL
+
+=============================================================================================================
+
+CLIENT:
+    1. Requires a bloom filter pickle file to exist
+        1.1. If it doesn't exist, request data from the server to rebuild the pickle file
+        1.2. Upon running the program, the bloom filter pickle file is loaded into memory
+
+    2. Internal operations will be written to a log file
+        2.1. Events will be kept hidden in the app itself, but they will be saved in a log file
+
+    3. The client can submit a URL to be blacklisted by the server
+
+    4. The client can request an updated list from the server to rebuild the bloom filter
+    
+    5. The bloom filter will be used during look-ups
+        5.1. If the check returns True, query the server for a full check
+
+    6. The client must provide a valid name for logging purposes
+        6.1. The name will be sent through HTTP requests
+
+SERVER:
+    1. Must have partitioned index files holding the list of malicious sites
+        1.1. Index files are partitioned by key ranges
+            - Partition 1: 0x00 - 0x3F
+            - Partition 2: 0x40 - 0x7F
+            - Partition 3: 0x80 - 0xBF
+            - Partition 4: 0xC0 - 0xFF
+        1.2. Each index file is built as a binary flat file of SHA-256 hashed URLs sorted lexicographically
+            1.2.1. Each index file must contain exactly 15,625 hashes (500,000 bytes)
+    
+    2. Servers have multiple Memtables stored in RAM during runtime for new writes
+        2.1. There should be 1 Memtable for every index file partition
+        2.2. Every time a new URL gets blacklisted, it writes to a WAL (log file)
+        2.3. The new URL also gets added to a Memtable, implemented using Red Black Tree
+        2.4. When any Memtable reaches a size threshold, it gets flushed to a new index file
+            2.3.1. The Memtable gets written into an index file on disk in its respective partition
+
+    3. Servers will have query endpoints for lookups and insertions only
