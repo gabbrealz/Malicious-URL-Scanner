@@ -1,0 +1,7 @@
+bitarray==3.7.2
+mmh3==5.2.0
+urllib3==2.3.0
+validators==0.35.0
+rich==14.2.0
+pyfiglet==1.0.4
+requests==2.32.5

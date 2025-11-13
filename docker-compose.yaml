@@ -1,0 +1,39 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: requirements/server.dockerfile
+    image: server-urlscanner
+    container_name: server-urlscanner-app
+    volumes:
+      - urlscanner_server_data:/app/server/server_core/data
+    ports:
+      - "8080:8080"
+    networks:
+      - urlscanner_network
+      
+  client:
+    build:
+      context: .
+      dockerfile: requirements/client.dockerfile
+    image: client-urlscanner
+    container_name: client-urlscanner-app
+    volumes:
+      - urlscanner_client_data:/app/client/client_core/data
+    networks:
+      - urlscanner_network
+    stdin_open: true
+    tty: true
+    depends_on:
+      - server
+
+volumes:
+  urlscanner_server_data:
+    name: urlscanner_server_data
+  urlscanner_client_data:
+    name: urlscanner_client_data
+
+networks:
+  urlscanner_network:
+    name: urlscanner_network
+    driver: bridge
