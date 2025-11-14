@@ -18,6 +18,7 @@ services:
       dockerfile: requirements/client.dockerfile
     image: client-urlscanner
     container_name: client-urlscanner-app
+    command: [ "--host", "server" ]
     volumes:
       - urlscanner_client_data:/app/client/client_core/data
     networks:
